@@ -46,42 +46,20 @@ public class Authorize {
     public Response getResponse() {
         return response;
     }
-
-    private static final String AUTH_USERNAME = "brandon";
-    private static final String AUTH_PASSWORD = "password";
-
+  
     /**
-     *
+     * Return true if this request is authorized by Basic authentication
      * @param req
-     * @return response
+     * @return 
      */
-//    public Response checkAuthorization() {
-//        // get auth header
-//        final Optional<String> authValue = getAuthCredentials();
-//        if (authValue.isPresent()) {
-//            String value = authValue.get();
-//            byte[] bytes = Base64.getDecoder().decode(value);
-//            String auth = new String(bytes);
-////            String username = auth.split(":")[0];
-////            String password = auth.split(":")[1];
-////            Gson gson = new Gson();
-////            String json = gson.toJson(auth);
-////            return Response.ok(json, MediaType.APPLICATION_JSON).build();
-//        }
-//        return Response.status(Status.UNAUTHORIZED).build(); // was not authorized
-//    }
-    public static boolean getIsAuthorized(HttpServletRequest req) {
+    public static boolean getIsBasicAuthorized(HttpServletRequest req) {
         Authorize authorize = new Authorize(req);
-        // get auth header
         final Optional<String[]> authValue = authorize.getAuthCredentials();
         if (authValue.isPresent()) {
-            boolean result = authorize.checkUsernamePassword(AUTH_USERNAME, AUTH_PASSWORD);
+            String[] creds = authValue.get();
+            boolean result = authorize.checkUsernamePassword(creds[0], creds[1]);
             return result;
         }
-//        AuthParams params = new AuthParams();
-//        params.req = req;
-//        Authorize authorize = new Authorize(params);
-
         return false;
     }
 
@@ -111,22 +89,6 @@ public class Authorize {
     static {
         users.add(new Credentials("brandon", "password"));
     }
-
-//    private Optional<String> getAuthHeaderValue2() {
-//        List<String> authHeaders = authParams.hh.getRequestHeaders().get("Authorization");
-//        if (!authHeaders.isEmpty()) {
-//            // find Basic auth header
-//            for (String authHeader : authHeaders) {
-//                String key = authHeader.substring(0, 5);
-//                if ("Basic".equals(key)) {
-//                    return Optional.of(authHeader.substring(6)); // trim space
-//                }
-//            }
-//            return Optional.of(authHeaders.get(0));
-//        }
-//        return Optional.empty();
-//    }
-
 
     public static final class Credentials {
 

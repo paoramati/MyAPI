@@ -38,28 +38,32 @@ public class AuthEndpoint {
             @Context HttpServletRequest req,
             @Context HttpHeaders hh)
     {
-        AuthParams authParams = new AuthParams();
-        authParams.req = req;
-        authParams.hh = hh;
-        Authorize authorize = new Authorize(authParams);
-        Response result = authorize.checkAuthorization();
-        return result;
+        boolean isAuthorized = Authorize.getIsBasicAuthorized(req);
+        if (isAuthorized) {
+//            Message msg = new Message();
+//            msg.me
+            String msg = "Was authorized using Basic authentication";
+            return Response.status(Response.Status.OK).entity(msg).build();
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
     
-    @POST
-    @Path("form")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response authorizeUserFromForm(
-            @Context HttpServletRequest req,
-            @Context HttpHeaders hh)
-    {
-        AuthParams authParams = new AuthParams();
-        authParams.req = req;
-        authParams.hh = hh;
-        Authorize authorize = new Authorize(authParams);
-        Response result = authorize.checkAuthorization();
-        return result;
-    }
+    
+    
+//    @POST
+//    @Path("form")
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    public Response authorizeUserFromForm(
+//            @Context HttpServletRequest req,
+//            @Context HttpHeaders hh)
+//    {
+//        AuthParams authParams = new AuthParams();
+//        authParams.req = req;
+//        authParams.hh = hh;
+//        Authorize authorize = new Authorize(authParams);
+////        Response result = authorize.get();
+//        return result;
+//    }
     
     
 }
