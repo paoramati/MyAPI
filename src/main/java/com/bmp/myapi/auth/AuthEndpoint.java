@@ -6,6 +6,7 @@
 package com.bmp.myapi.auth;
 
 import com.bmp.myapi.auth.Authorize.AuthParams;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,36 +21,45 @@ import javax.ws.rs.core.Response;
  *
  * @author shareuser
  */
-@Path("auth")
+//@Path("auth")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AuthEndpoint {
-    
-    @GET
-    @Path("test")
-    public String test()
-    {
-        return "Auth endpoint is active";
+public class AuthEndpoint
+{
+
+	@GET
+	@Path("test")
+	public String test()
+	{
+		return "Auth API and endpoint is active";
 //        return Response.status(Response.Status.ACCEPTED).build();
-    }
-    
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response authorizeUser(
-            @Context HttpServletRequest req,
-            @Context HttpHeaders hh)
-    {
-        boolean isAuthorized = Authorize.getIsBasicAuthorized(req);
-        if (isAuthorized) {
-//            Message msg = new Message();
-//            msg.me
-            String msg = "Was authorized using Basic authentication";
-            return Response.status(Response.Status.OK).entity(msg).build();
-        }
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-    
-    
-    
+	}
+
+	@POST
+	@Path("token")
+	public Response getToken(@Context HttpServletRequest req, @Context ServletContext context)
+	{
+		if (true)
+		{
+			return Response.status(Response.Status.OK).entity("Here's you're token!").build();
+		}
+		return Response.serverError().build();
+	}
+
+//    @POST
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public Response authorizeUser(
+//            @Context HttpServletRequest req,
+//            @Context HttpHeaders hh)
+//    {
+//        boolean isAuthorized = Authorize.getIsBasicAuthorized(req);
+//        if (isAuthorized) {
+////            Message msg = new Message();
+////            msg.me
+//            String msg = "Was authorized using Basic authentication";
+//            return Response.status(Response.Status.OK).entity(msg).build();
+//        }
+//        return Response.status(Response.Status.UNAUTHORIZED).build();
+//    }
 //    @POST
 //    @Path("form")
 //    @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -64,6 +74,4 @@ public class AuthEndpoint {
 ////        Response result = authorize.get();
 //        return result;
 //    }
-    
-    
 }

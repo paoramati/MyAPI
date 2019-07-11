@@ -1,4 +1,4 @@
-package com.bmp.myapi;
+package com.bmp.myapi.v1;
 
 import com.bmp.myapi.auth.Authorize;
 import com.bmp.myapi.model.Data.Resource;
@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response.Status;
 /**
  * Root resource (exposed at "test" path)
  */
-@Path("test")
+@Path("v1")
 public class TestEndpoint {
 
     /**
