@@ -1,0 +1,145 @@
+/*****************************************************************************
+ * This file contains proprietary information of Access-It Software Ltd.
+ * Copying or reproduction without prior written approval is prohibited.
+ * Copyright (c) 2004-2019 Access-It Software Ltd.
+ *
+ * Created 11 07 2019
+ *****************************************************************************/
+package nz.co.ais.web.api.auth;
+
+import nz.co.ais.common.DebugCtrl;
+import nz.co.ais.sql.core.IAISsql_Mgr;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import nz.co.ais.web.api.JSONAPI_Base;
+import org.apache.commons.codec.binary.Base64;
+
+
+/**
+ * JSONAPI_Authorize
+ *
+ * @author : Brandon
+ */
+
+public class JSONAPI_Authorize extends JSONAPI_Base
+{
+//	private HttpServletRequest req = null;
+    final static Set<Credentials> users = new HashSet(); // static map of users who can be authorized via BASIC auth
+    static
+    {
+        users.add(new Credentials("brandon", "password"));
+        users.add(new Credentials("martin", "accessit"));
+    }
+
+	public JSONAPI_Authorize()//HttpServletRequest req)
+	{
+//		this.req = req;
+	}
+
+	/**
+     * Return true if this request is authorized by Basic authentication
+     * @param req
+     * @return
+     */
+    public static boolean getIsBasicAuthorized(IAISsql_Mgr sqlMgr, HttpServletRequest req) {
+    	try
+	    {
+		    final JSONAPI_Authorize authorize = new JSONAPI_Authorize();//req);
+	        final Optional<String[]> authValue = authorize.getAuthCredentials(Collections.list(req.getHeaders("Authorization")));
+	        if (authValue.isPresent()) {
+	            final String[] creds = authValue.get();
+	            final boolean result = authorize.checkUsernamePassword(creds[0], creds[1]);
+	            return result;
+	        }
+	    }
+	    catch (Exception e)
+	    {
+		    DebugCtrl.logMsg(DebugCtrl.ERROR, "Error when trying to authorize user");
+		    DebugCtrl.handleStackTrace_ForDbgOrRelease(e);
+	    }
+        return false;
+    }
+
+    public boolean getIsAuthorized(IAISsql_Mgr sqlMgr, HttpServletRequest req)
+    {
+		final Optional<String[]> authValue = getAuthCredentials(Collections.list(req.getHeaders("Authorization")));
+        if (authValue.isPresent())
+        {
+            final String[] creds = authValue.get();
+            final boolean isValid = checkUsernamePassword(creds[0], creds[1]);
+            return isValid;
+        }
+        return false;
+    }
+
+    private Optional<String[]> getAuthCredentials(List<String> authHeaders) {
+        if (!authHeaders.isEmpty()) {
+            for (String authHeader : authHeaders) {
+                if ("Basic".equals(authHeader.substring(0, 5))) {
+                    final byte[] bytes = Base64.decodeBase64(authHeader.substring("Basic".length()).trim());
+                    final String credentials = new String(bytes, StandardCharsets.UTF_8);
+                    return Optional.of(credentials.split(":"));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private boolean checkUsernamePassword(final String username, final String password) {
+        final Predicate<Credentials> credentialsMatch = c ->
+            c.getUsername().equals(username) && c.getPassword().equals(password);
+        final boolean result = users.stream().anyMatch(credentialsMatch);
+        return result;
+    }
+
+    public static final class Credentials
+    {
+        private String username = null;
+        private String password = null;
+
+        public Credentials(final String username, final String password)
+        {
+            this.username = username;
+            this.password = password;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+        public String getPassword() {
+            return password;
+        }
+    }
+
+    public static class Result
+    {
+    	public Integer status = null;
+    	public String message = null;
+    }
+
+    public static String getSuccessResult()
+	{
+	    Result result = new Result();
+	    result.status = Response.Status.OK.getStatusCode();
+		result.message = "User is authorized to access restricted resources";
+	    return gson().toJson(result);
+    }
+
+    public static String getUnauthorizedResult()
+    {
+        Result result = new Result();
+        result.status = Response.Status.UNAUTHORIZED.getStatusCode();
+        result.message = "Authorization details were not correct";
+	    return gson().toJson(result);
+    }
+}
+

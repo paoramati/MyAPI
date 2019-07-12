@@ -6,6 +6,7 @@
 package com.bmp.myapi.auth;
 
 import com.bmp.myapi.auth.Authorize.AuthParams;
+import com.bmp.myapi.model.Data.Access;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -38,12 +39,28 @@ public class AuthEndpoint
 	@Path("token")
 	public Response getToken(@Context HttpServletRequest req, @Context ServletContext context)
 	{
-		if (true)
+		try
 		{
-			return Response.status(Response.Status.OK).entity("Here's you're token!").build();
+			Authorize auth = new Authorize(req);
+			if (auth.getIsBasicAuthorized(req))
+			{
+				// generate token
+				final String token = auth.generateJWT(req);
+//				final String json = auth.getAccessToken(token);
+				return Response.status(Response.Status.OK).entity(auth.getAccessToken(token)).build();
+			}
+			else
+			{
+				return Response.status(Response.Status.UNAUTHORIZED).entity("Basic auth details are not correct").build();
+			}
+		}
+		catch (Exception e)
+		{
+			
 		}
 		return Response.serverError().build();
 	}
+
 
 //    @POST
 //    @Consumes(MediaType.APPLICATION_JSON)
